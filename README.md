@@ -411,4 +411,4 @@ server {
 
 ## License
 
-Private
+[Apache License 2.0](LICENSE)
