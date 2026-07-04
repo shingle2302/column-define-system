@@ -1,0 +1,1051 @@
+{
+  "info": {
+    "name": "列自定义系统 API",
+    "description": "Column Define System — 完整 API 集合\n\n包含 31 个接口，按模块分组：\n- 健康检查 (1)\n- 认证 (1)\n- 系统/业务/预设查询 (3)\n- 预设 (2)\n- 用户覆盖 (3)\n- 分享 (1)\n- 管理中心 (20)\n\n测试账号:\n  admin / admin123  (管理员)\n  alice / alice123  (普通用户)\n  bob   / bob123    (普通用户)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "cds"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "shareToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// 所有请求自动携带此预请求脚本",
+          "// 如果当前请求未设置 Authorization，则使用 collection 级别的 Bearer token",
+          ""
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "1. 健康检查",
+      "item": [
+        {
+          "name": "GET /api/health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"状态码 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"返回 code=200\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.code).to.eql(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. 认证",
+      "item": [
+        {
+          "name": "POST /api/auth/login — 管理员登录",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.code === 200) {",
+                  "  pm.collectionVariables.set('token', json.data.token);",
+                  "  console.log('Token 已自动保存到 collectionVariables.token');",
+                  "}",
+                  "pm.test(\"登录成功\", () => {",
+                  "  pm.expect(json.code).to.eql(200);",
+                  "  pm.expect(json.data.token).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/auth/login — 普通用户登录 (alice)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.code === 200) {",
+                  "  pm.collectionVariables.set('token', json.data.token);",
+                  "  console.log('alice Token 已自动保存到 collectionVariables.token');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"alice123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/auth/login — 普通用户登录 (bob)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.code === 200) {",
+                  "  pm.collectionVariables.set('token', json.data.token);",
+                  "  console.log('bob Token 已自动保存到 collectionVariables.token');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"bob\",\n  \"password\": \"bob123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. 系统/业务/预设查询 (公开)",
+      "item": [
+        {
+          "name": "GET /api/systems — 系统+业务列表",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"返回系统列表\", () => {",
+                  "  pm.expect(json.code).to.eql(200);",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/systems",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "systems"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/systems/{systemCode}/presets",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"返回系统下预设\", () => {",
+                  "  pm.expect(json.code).to.eql(200);",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/systems/hr/presets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "systems", "hr", "presets"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/businesses/{businessId}/presets",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"返回业务下预设\", () => {",
+                  "  pm.expect(json.code).to.eql(200);",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/businesses/biz_crm_customer/presets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "businesses", "biz_crm_customer", "presets"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. 预设查询",
+      "item": [
+        {
+          "name": "GET /api/presets — 所有预设",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"返回所有预设\", () => {",
+                  "  pm.expect(json.code).to.eql(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/presets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "presets"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/presets/{id} — 预设详情",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"返回预设详情（含分组和列）\", () => {",
+                  "  pm.expect(json.code).to.eql(200);",
+                  "  pm.expect(json.data.groups).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/presets/p_hr_staff_default",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "presets", "p_hr_staff_default"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. 用户个性化覆盖 (需登录)",
+      "description": "这些接口需要 token，请先执行「认证」分组中的登录请求",
+      "item": [
+        {
+          "name": "GET /api/overrides/{presetId} — 加载覆盖",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"加载覆盖\", () => {",
+                  "  pm.expect(json.code).to.eql(200);",
+                  "  if (json.data) pm.expect(json.data.presetId).to.eql('p_hr_staff_default');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/overrides/p_hr_staff_default",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "overrides", "p_hr_staff_default"]
+            }
+          }
+        },
+        {
+          "name": "PUT /api/overrides/{presetId} — 保存覆盖",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"presetId\": \"p_hr_staff_default\",\n  \"columnOverrides\": {\n    \"email\": {\n      \"order\": 0,\n      \"width\": 250,\n      \"visible\": true,\n      \"pinned\": null\n    },\n    \"phone\": {\n      \"order\": 1,\n      \"width\": 180,\n      \"visible\": false,\n      \"pinned\": null\n    }\n  },\n  \"version\": 1,\n  \"updatedAt\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/overrides/p_hr_staff_default",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "overrides", "p_hr_staff_default"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/overrides/{presetId}/share — 创建分享",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.code === 200 && json.data) {",
+                  "  pm.collectionVariables.set('shareToken', json.data);",
+                  "  console.log('分享 Token 已保存:', json.data);",
+                  "}",
+                  "pm.test(\"创建分享成功\", () => pm.expect(json.code).to.eql(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/overrides/p_hr_staff_default/share",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "overrides", "p_hr_staff_default", "share"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. 分享内容加载",
+      "item": [
+        {
+          "name": "GET /api/shared/{token}",
+          "description": "使用上面「创建分享」返回的 token 加载内容。请先执行「5. 用户个性化覆盖 → 创建分享」获取 token。",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"加载分享内容\", () => pm.expect(json.code).to.eql(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/shared/{{shareToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "shared", "{{shareToken}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. 管理中心 — 系统管理 (admin)",
+      "description": "需要 admin 角色 token。请先执行「认证 → 管理员登录」。",
+      "item": [
+        {
+          "name": "GET /api/admin/systems — 查所有",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"管理系统列表\", () => {",
+                  "  pm.expect(json.code).to.eql(200);",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/systems",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "systems"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/admin/systems — 新增系统",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"新增系统\", () => pm.expect(json.code).to.eql(200));",
+                  "if (json.code === 200) console.log('新增系统 id:', json.data?.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"WMS 仓库管理系统\",\n  \"code\": \"wms\",\n  \"description\": \"仓库出入库管理\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/systems",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "systems"]
+            }
+          }
+        },
+        {
+          "name": "PUT /api/admin/systems/{id} — 编辑系统",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"CRM 客户管理系统\",\n  \"code\": \"crm\",\n  \"description\": \"客户资料与跟进管理（已更新）\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/systems/sys_crm",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "systems", "sys_crm"]
+            }
+          }
+        },
+        {
+          "name": "DELETE /api/admin/systems/{id} — 删除系统",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"删除系统\", () => pm.expect(json.code).to.eql(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/systems/sys_crm",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "systems", "sys_crm"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. 管理中心 — 业务管理 (admin)",
+      "description": "需要 admin 角色 token。",
+      "item": [
+        {
+          "name": "GET /api/admin/businesses — 查所有业务",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"管理业务列表\", () => {",
+                  "  pm.expect(json.code).to.eql(200);",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/businesses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "businesses"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/admin/businesses?systemId=xxx — 按系统筛选",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/businesses?systemId=sys_hr",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "businesses"],
+              "query": [
+                { "key": "systemId", "value": "sys_hr" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /api/admin/businesses — 新增业务",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"新增业务\", () => pm.expect(json.code).to.eql(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"systemId\": \"sys_hr\",\n  \"name\": \"薪资管理\",\n  \"code\": \"salary\",\n  \"description\": \"薪资计算与发放管理\",\n  \"sortOrder\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/businesses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "businesses"]
+            }
+          }
+        },
+        {
+          "name": "PUT /api/admin/businesses/{id} — 编辑业务",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"systemId\": \"sys_crm\",\n  \"name\": \"客户管理\",\n  \"code\": \"customer\",\n  \"description\": \"客户信息的增删改查（已更新）\",\n  \"sortOrder\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/businesses/biz_crm_customer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "businesses", "biz_crm_customer"]
+            }
+          }
+        },
+        {
+          "name": "DELETE /api/admin/businesses/{id} — 删除业务",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"删除业务\", () => pm.expect(json.code).to.eql(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/businesses/biz_crm_customer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "businesses", "biz_crm_customer"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. 管理中心 — 预设管理 (admin)",
+      "description": "需要 admin 角色 token。",
+      "item": [
+        {
+          "name": "GET /api/admin/presets — 查所有预设",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"管理预设列表\", () => {",
+                  "  pm.expect(json.code).to.eql(200);",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/presets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "presets"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/admin/presets?systemId=xxx&businessId=xxx — 筛选",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/presets?systemId=sys_hr",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "presets"],
+              "query": [
+                { "key": "systemId", "value": "sys_hr" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /api/admin/presets — 新增预设",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"新增预设\", () => pm.expect(json.code).to.eql(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"管理员专属视图\",\n  \"description\": \"管理员专属的员工视图\",\n  \"systemId\": \"sys_hr\",\n  \"businessId\": \"biz_hr_staff\",\n  \"allowCrossGroup\": false,\n  \"isDefault\": false,\n  \"minVisibleColumns\": 2,\n  \"maxVisibleColumns\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/presets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "presets"]
+            }
+          }
+        },
+        {
+          "name": "PUT /api/admin/presets/{id} — 编辑预设",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"标准员工视图\",\n  \"description\": \"员工档案标准视图（已更新）\",\n  \"systemId\": \"sys_hr\",\n  \"businessId\": \"biz_hr_staff\",\n  \"allowCrossGroup\": false,\n  \"isDefault\": true,\n  \"minVisibleColumns\": 3,\n  \"maxVisibleColumns\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/presets/p_hr_staff_default",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "presets", "p_hr_staff_default"]
+            }
+          }
+        },
+        {
+          "name": "DELETE /api/admin/presets/{id} — 删除预设",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"删除预设\", () => pm.expect(json.code).to.eql(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/presets/p_crm_customer_compact",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "presets", "p_crm_customer_compact"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. 管理中心 — 分组管理 (admin)",
+      "description": "需要 admin 角色 token。",
+      "item": [
+        {
+          "name": "GET /api/admin/presets/{presetId}/groups — 查预设下分组",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"分组列表\", () => {",
+                  "  pm.expect(json.code).to.eql(200);",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/presets/p_hr_staff_default/groups",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "presets", "p_hr_staff_default", "groups"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/admin/presets/{presetId}/groups — 新增分组",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"新增分组\", () => pm.expect(json.code).to.eql(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"教育背景\",\n  \"parentId\": null,\n  \"sortOrder\": 2,\n  \"collapsed\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/presets/p_hr_staff_default/groups",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "presets", "p_hr_staff_default", "groups"]
+            }
+          }
+        },
+        {
+          "name": "PUT /api/admin/groups/{id} — 编辑分组",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"基本信息（已更新）\",\n  \"parentId\": null,\n  \"sortOrder\": 0,\n  \"collapsed\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/groups/g_hr_staff_base",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "groups", "g_hr_staff_base"]
+            }
+          }
+        },
+        {
+          "name": "DELETE /api/admin/groups/{id} — 删除分组",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"删除分组\", () => pm.expect(json.code).to.eql(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/groups/g_hr_staff_job",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "groups", "g_hr_staff_job"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. 管理中心 — 列定义管理 (admin)",
+      "description": "需要 admin 角色 token。",
+      "item": [
+        {
+          "name": "GET /api/admin/groups/{groupId}/columns — 查分组下列",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"列定义列表\", () => {",
+                  "  pm.expect(json.code).to.eql(200);",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/groups/g_hr_staff_base/columns",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "groups", "g_hr_staff_base", "columns"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/admin/groups/{groupId}/columns — 新增列定义",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"新增列定义\", () => pm.expect(json.code).to.eql(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"微信号\",\n  \"field\": \"wechat\",\n  \"type\": \"text\",\n  \"width\": 160,\n  \"minWidth\": 80,\n  \"maxWidth\": 300,\n  \"sortable\": false,\n  \"filterable\": false,\n  \"resizable\": true,\n  \"visible\": true,\n  \"pinned\": null,\n  \"locked\": false,\n  \"allowHide\": true,\n  \"allowSort\": true,\n  \"allowResize\": true,\n  \"allowPin\": true,\n  \"sortOrder\": 99\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/groups/g_hr_staff_base/columns",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "groups", "g_hr_staff_base", "columns"]
+            }
+          }
+        },
+        {
+          "name": "PUT /api/admin/columns/{id} — 编辑列定义",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"姓名\",\n  \"field\": \"name\",\n  \"type\": \"text\",\n  \"width\": 130,\n  \"minWidth\": 80,\n  \"maxWidth\": 250,\n  \"sortable\": true,\n  \"filterable\": true,\n  \"resizable\": true,\n  \"visible\": true,\n  \"pinned\": \"left\",\n  \"locked\": true,\n  \"allowHide\": false,\n  \"allowSort\": false,\n  \"allowResize\": true,\n  \"allowPin\": false,\n  \"sortOrder\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/columns/d_h0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "columns", "d_h0"]
+            }
+          }
+        },
+        {
+          "name": "DELETE /api/admin/columns/{id} — 删除列定义",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"删除列定义\", () => pm.expect(json.code).to.eql(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/columns/d_h6",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "columns", "d_h6"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. 权限验证测试",
+      "description": "验证普通用户无法访问管理员接口",
+      "item": [
+        {
+          "name": "非 admin 用户访问管理接口 (预期 401)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// 先获取 alice 的 token",
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/login',",
+                  "  method: 'POST',",
+                  "  header: { 'Content-Type': 'application/json' },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({ username: 'alice', password: 'alice123' }) }",
+                  "}, (err, res) => {",
+                  "  const json = res.json();",
+                  "  if (json.code === 200) {",
+                  "    pm.request.headers.add({ key: 'Authorization', value: 'Bearer ' + json.data.token });",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test(\"普通用户被 401 拦截\", () => {",
+                  "  pm.expect(json.code).to.eql(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/systems",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "systems"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
